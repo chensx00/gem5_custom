@@ -124,12 +124,19 @@ class MinorCPU : public BaseCPU
     /** Return a reference to the instruction port. */
     Port &getInstPort() override;
 
+
+    /** Return a reference to custom*/
+    Port &getCustPort() ;//override;
+
   public:
     MinorCPU(const BaseMinorCPUParams &params);
 
     ~MinorCPU();
 
   public:
+
+    Port &getPort(const std::string &if_name, PortID idx=InvalidPortID) override;
+
     /** Starting, waking and initialisation */
     void init() override;
     void startup() override;

@@ -1,0 +1,7 @@
+Import('*')
+
+SimObject('CustomObj.py', sim_objects=['CustomObj'])
+
+Source('custom_obj.cc')
+
+DebugFlag('CustomObj', "Custom Inst")

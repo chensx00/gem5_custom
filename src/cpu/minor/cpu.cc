@@ -309,6 +309,27 @@ MinorCPU::getDataPort()
     return pipeline->getDataPort();
 }
 
+Port &
+MinorCPU::getCustPort()
+{
+    return pipeline->getCustPort();
+}
+
+
+Port &
+MinorCPU::getPort(const std::string &if_name, PortID idx)
+{
+    if (if_name == "dcache_port")
+        return getDataPort();
+    else if (if_name == "icache_port")
+        return getInstPort();
+    if (if_name == "custominst_port")
+        return getCustPort();
+    else
+        return getCustPort();
+}
+
+
 Counter
 MinorCPU::totalInsts() const
 {

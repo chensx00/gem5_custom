@@ -55,6 +55,7 @@
 #include "cpu/minor/lsq.hh"
 #include "cpu/minor/pipe_data.hh"
 #include "cpu/minor/scoreboard.hh"
+#include "cpu/minor/custom.hh"
 
 namespace gem5
 {
@@ -120,6 +121,9 @@ class Execute : public Named
 
     /** Dcache port to pass on to the CPU.  Execute owns this */
     LSQ lsq;
+
+    /* Custom Inst */
+    Custom custom;
 
     /** Scoreboard of instruction dependencies */
     std::vector<Scoreboard> scoreboard;
@@ -314,6 +318,11 @@ class Execute : public Named
     /** Set the drain state (with useful debugging messages) */
     void setDrainState(ThreadID thread_id, DrainState state);
 
+    /* Send To MemObject */
+    void SendToCustom(MinorDynInstPtr inst);
+
+
+
     /** Use the current threading policy to determine the next thread to
      *  decode from. */
     ThreadID getCommittingThread();
@@ -332,6 +341,9 @@ class Execute : public Named
 
     /** Returns the DcachePort owned by this Execute to pass upwards */
     MinorCPU::MinorCPUPort &getDcachePort();
+
+    /** Return the CustomPort*/
+    MinorCPU::MinorCPUPort &getCustPort();
 
     /** To allow ExecContext to find the LSQ */
     LSQ &getLSQ() { return lsq; }

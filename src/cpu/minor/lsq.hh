@@ -730,6 +730,8 @@ class LSQ : public Named
     /** Return the raw-bindable port */
     MinorCPU::MinorCPUPort &getDcachePort() { return dcachePort; }
 
+
+
     void minorTrace() const;
 };
 

@@ -300,6 +300,8 @@ class BaseMinorCPU(BaseCPU):
     cxx_header = "cpu/minor/cpu.hh"
     cxx_class = "gem5::MinorCPU"
 
+    custominst_port = RequestPort("CustomInst Port")
+
     @classmethod
     def memory_mode(cls):
         return "timing"

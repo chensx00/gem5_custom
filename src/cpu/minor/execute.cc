@@ -54,6 +54,8 @@
 #include "debug/MinorTrace.hh"
 #include "debug/PCEvent.hh"
 
+#include "debug/CustomObj.hh"
+
 namespace gem5
 {
 
@@ -88,6 +90,8 @@ Execute::Execute(const std::string &name_,
         params.executeLSQTransfersQueueSize,
         params.executeLSQStoreBufferSize,
         params.executeLSQMaxStoreBufferStoresPerCycle),
+    custom(name_ + ".custom", name_ + ".custominst_port",
+        cpu_, *this),
     executeInfo(params.numThreads,
             ExecuteThreadInfo(params.executeCommitLimit)),
     interruptPriority(0),
@@ -698,6 +702,7 @@ Execute::issue(ThreadID thread_id)
                                 timing->extraAssumedLat;
                         }
 
+                        /* Floating Inst is custome Inst */
                         issued_mem_ref = inst->isMemRef();
 
                         QueuedInst fu_inst(inst);
@@ -743,6 +748,12 @@ Execute::issue(ThreadID thread_id)
                                 *inst);
                             thread.inFUMemInsts->push(fu_inst);
                         }
+
+                        /** Custom*/
+                        // if(inst->staticInst->isFloating())
+                        // {
+                        //     DPRINTF(CustomObj, "Floating issued at %d\n",curTick());
+                        // }
 
                         /* Issue to FU */
                         fu->push(fu_inst);
@@ -951,6 +962,10 @@ Execute::commitInst(MinorDynInstPtr inst, bool early_memory_issue,
             completed_inst = completed_mem_inst;
         }
         completed_mem_issue = completed_inst;
+    } else if(inst->staticInst->isFloating()) {
+        // custome Inst
+        SendToCustom(inst);
+
     } else if (inst->isInst() && inst->staticInst->isFullMemBarrier() &&
         !lsq.canPushIntoStoreBuffer())
     {
@@ -1891,6 +1906,22 @@ Execute::getDcachePort()
 {
     return lsq.getDcachePort();
 }
+
+MinorCPU::MinorCPUPort &
+Execute::getCustPort()
+{
+    return custom.getCustPort();
+}
+
+/*  */
+void 
+Execute::SendToCustom(MinorDynInstPtr inst)
+{
+    DPRINTF(CustomObj, "SendToCustom[%d]\n", curTick());
+    custom.SendToRTL(inst);
+
+}
+
 
 } // namespace minor
 } // namespace gem5
