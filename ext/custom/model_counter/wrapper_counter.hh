@@ -1,4 +1,5 @@
-
+#ifndef __WRAPPER_COUNTER_HH__
+#define __WRAPPER_COUNTER_HH__
 
 #include <cstdlib>
 #include <iostream>
@@ -45,3 +46,4 @@ class Wrapper_counter
 };
 
 
+#endif

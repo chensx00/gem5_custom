@@ -6,6 +6,7 @@ OBJS_VERILATE='*.sv' # Modify with the rtl object files
 # export VERILATOR_ROOT=/home/csx/sw/verilator/v4.100
 # generate sv to cpp
 verilate_vcd: $(OBJS)
+	export VERILATOR_ROOT=/home/csx/sw/verilator/v4.100
 	$(VERILATOR_ROOT)/bin/verilator -Wall -cc --trace Top.sv --Mdir $(DIR_VCD)
 
 
@@ -28,5 +29,5 @@ clean:
 cleanall:
 	rm -rf $(DIR_VCD) libVerilatorCounter.so
 	rm -rf ../custom_packet_counter.hh
-	rm -rf ../libVerilatorCounter
+	rm -rf ../libVerilatorCounter.so
 	rm -rf ../wrapper_counter.hh
