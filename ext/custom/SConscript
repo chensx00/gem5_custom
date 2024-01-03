@@ -1,0 +1,16 @@
+# Add Verilator PATH
+
+import os
+Import('main')
+## export VERILATOR_ROOT=/home/csx/sw/verilator/v4.100
+## Add VERILATOR PATH
+main.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include')])
+main.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include/vltstd')])
+## FIFO 
+## NEEDS to be Modified for every model model_newrtlObject/verilator_output
+main.Append(CPPPATH=[Dir('.')])
+main.Append(CPPPATH=[Dir('model_counter/verilator_counter_vcd')])
+## Find the library path and add library
+main.Append(LIBS=['VerilatorCounter'])
+main.Prepend(LIBPATH=Dir('.'))
+main.Append(CPPDEFINES=['VM_SC=0', 'VM_TRACE=1','VL_THREADED=0'])
