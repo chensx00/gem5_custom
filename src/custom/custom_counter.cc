@@ -2,7 +2,7 @@
 #include "base/logging.hh"
 #include "base/trace.hh"
 
-#include "debug/custom_counter.hh"
+#include "debug/CustomObj.hh"
 
 namespace gem5
 {
@@ -11,6 +11,7 @@ CustomCounter::CustomCounter(const CustomCounterParams &params) :
     CustomObj(params),
     tickEvent([this]{tick();}, name() + ".tickEvent"),
     instPort(params.name + ".counter_port", this),
+    blocked(false)
 {
     initRTLModel();
 }
@@ -85,6 +86,18 @@ CustomCounter::CPUSidePort::trySendRetry()
 }
 
 
+AddrRangeList 
+CustomCounter::getAddrRanges() const
+{
+    
+}
+
+void 
+CustomCounter::recvFunctional(PacketPtr pkt)
+{
+    
+}
+
 //---------------------------//
 
 
@@ -129,11 +142,16 @@ CustomCounter::finishInst()
 void
 CustomCounter::tick()
 {
+    DPRINTF(CustomObj, "tick at %d \n", curTick());
+    
     outputCounter out = wr->tick(input);
-    if(out == 1) {
+
+    DPRINTF(CustomObj, "out.cnt = %d \n", out.cnt);
+    if(out.out == 1) {
+        DPRINTF(CustomObj, "out = 1  at %d \n", curTick());
         finishInst();
     } else {
-        schedule(tickEvent,nextCycle());
+        schedule(tickEvent,curTick() + 1);
     }
 }
 
@@ -158,7 +176,10 @@ void
 CustomCounter::initRTLModel()
 {
     //traceOn = true
+    DPRINTF(CustomObj, "reset  at %d \n", curTick());
     wr = new Wrapper_counter(true,"trace.vcd");
+    wr->reset();
+    //DPRINTF(CustomObj, "out.cnt = %d \n", curTick());
 }
 
 void 

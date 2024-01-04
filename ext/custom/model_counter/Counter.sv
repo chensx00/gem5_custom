@@ -4,11 +4,11 @@ module Counter
     input wire      rst,
     input wire      ena,
 
-    output reg      out//,
-    //output reg[3:0]    cnt
+    output reg      out,
+    output reg[3:0] cnt
 );
 
-reg[3:0]    cnt;
+//reg[3:0]    cnt;
 
 
 

@@ -94,6 +94,7 @@ Wrapper_counter::processOutput()
 {
     outputCounter out;
     out.out = top->out;
+    out.cnt = top->cnt;
     return out;
 }
 

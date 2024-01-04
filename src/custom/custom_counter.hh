@@ -5,7 +5,7 @@
 #include "params/CustomCounter.hh"
 #include "sim/sim_object.hh"
 #include "mem/packet.hh"
-
+#include "sim/clocked_object.hh"
 #include "custom/custom_obj.hh"
 #include "wrapper_counter.hh"
 
@@ -18,9 +18,9 @@ class CustomCounter : public CustomObj
     private:
         EventFunctionWrapper tickEvent;
 
-        void handleInst() override;
+        void handleInst() ;
 
-        void finishInst() override;
+        void finishInst() ;
 
     class CPUSidePort : public ResponsePort
     {
@@ -31,7 +31,7 @@ class CustomCounter : public CustomObj
 
             PacketPtr blockedPacket;
         public:
-            CPUSidePort(const std::string& name, CustomObj *owner) : 
+            CPUSidePort(const std::string& name, CustomCounter *owner) : 
                 ResponsePort(name) ,owner(owner), needRetry(false),
                 blockedPacket(nullptr)
             { }
@@ -45,15 +45,16 @@ class CustomCounter : public CustomObj
             bool recvTimingReq(PacketPtr ptk) override;
             void recvRespRetry() override;
 
-    }
-    bool handleRequest(PacketPtr pkt) override;
+    };
+    bool handleRequest(PacketPtr pkt);//override;
 
     //bool handleResponse(PacketPtr pkt);
-    //void recvFunctional(PacketPtr pkt) override;    
+    void recvFunctional(PacketPtr pkt);//override;    
 
-
+    bool needRetry;
+    AddrRangeList getAddrRanges() const;
     CPUSidePort instPort;
-
+    bool blocked;
     inputCounter input;
 
 

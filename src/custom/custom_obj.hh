@@ -5,7 +5,7 @@
 #include "params/CustomObj.hh"
 #include "sim/sim_object.hh"
 #include "mem/packet.hh"
-
+#include "sim/clocked_object.hh"
 
 namespace gem5
 {
