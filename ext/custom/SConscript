@@ -14,4 +14,7 @@ env.Append(CPPPATH=[Dir('model_counter/verilator_counter_vcd').srcnode()])
 ## Find the library path and add library
 env.Append(LIBS=['VerilatorCounter'])
 env.Prepend(LIBPATH=Dir('.').srcnode())
+## Add dynamic link library path
+env.Append(LINKFLAGS=['-Wl,-rpath,' + str(Dir('.').srcnode())])
+
 env.Append(CPPDEFINES=['VM_SC=0', 'VM_TRACE=1','VL_THREADED=0'])
