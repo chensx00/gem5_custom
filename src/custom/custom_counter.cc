@@ -137,6 +137,8 @@ CustomCounter::finishInst()
     assert(blocked);
     blocked = false;
     DPRINTF(CustomObj, "finish float inst at %d \n", curTick());
+    //wr->finishOneInst();
+    endRTLModel();
 }
 
 void
@@ -185,6 +187,8 @@ CustomCounter::initRTLModel()
 void 
 CustomCounter::endRTLModel()
 {
+    DPRINTF(CustomObj, "endRTLModel at %d \n", curTick());
+    //wr->~Wrapper_counter();
     delete wr;
 }
 

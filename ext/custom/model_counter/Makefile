@@ -19,6 +19,11 @@ install: libVerilatorCounter.so
 	cp wrapper_counter.hh ../
 	cp custom_packet_counter.hh ../
 
+all: library_vcd
+	cp libVerilatorCounter.so ../
+	cp wrapper_counter.hh ../
+	cp custom_packet_counter.hh ../
+
 
 .PHONY: clean cleanall
 
