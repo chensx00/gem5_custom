@@ -32,3 +32,8 @@ configs/example/memcheck.cfg
 configs/dram/lowp_sweep.cfg
 .pyenv
 .vscode
+ext/custom/model_counter/verilator_counter_vcd/
+ext/custom/model_counter/libVerilatorCounter.so
+ext/custom/libVerilatorCounter.so
+ext/custom/custom_packet_counter.hh
+ext/custom/wrapper_counter.hh
