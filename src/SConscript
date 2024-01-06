@@ -66,6 +66,10 @@ Export('env')
 
 build_env = list(env['CONF'].items())
 
+# Generate compile_commands.json for language servers
+if 'CompilationDatabase' in env['BUILDERS']:
+    env.CompilationDatabase('compile_commands.json')
+
 from code_formatter import code_formatter
 
 def GdbXml(xml_id, symbol, tags=None, add_tags=None):
