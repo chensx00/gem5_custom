@@ -6,13 +6,12 @@ OBJS_VERILATE='*.sv' # Modify with the rtl object files
 # export VERILATOR_ROOT=/home/csx/sw/verilator/v4.100
 # generate sv to cpp
 verilate_vcd: $(OBJS)
-	export VERILATOR_ROOT=/home/csx/sw/verilator/v4.100
 	$(VERILATOR_ROOT)/bin/verilator -Wall -cc --trace Top.sv --Mdir $(DIR_VCD)
 
 
-library_vcd: verilate_vcd wrapper_counter.cc wrapper_counter.hh 
+library_vcd: verilate_vcd wrapper_counter.cc wrapper_counter.hh
 	g++ -I $(DIR_VCD) -I$(VERILATOR_ROOT)/include wrapper_counter.cc $(DIR_VCD)/*.cpp \
-	$(VERILATOR_ROOT)/include/verilated.cpp $(VERILATOR_ROOT)/include/verilated_vcd_c.cpp \
+	$(shell python ../extract_verilator.py $(VERILATOR_ROOT)/include/ $(DIR_VCD) VTop.mk) \
 	-fpic  -shared -o libVerilatorCounter.so
 
 install: libVerilatorCounter.so
