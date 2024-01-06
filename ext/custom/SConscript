@@ -3,18 +3,15 @@
 import os
 Import('env')
 
-## export VERILATOR_ROOT=/home/csx/sw/verilator/v4.100
 ## Add VERILATOR PATH
 env.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include')])
 env.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include/vltstd')])
 ## FIFO 
-## NEEDS to be Modified for every model model_newrtlObject/verilator_output
-#env.Append(CPPPATH=[Dir('.')])
-env.Append(CPPPATH=[Dir('/home/csx/workland/mycode/gem5-custom/ext/custom')])
-# 暂时改成绝对路径，还没细看scons的原理
-#env.Append(CPPPATH=[Dir('model_counter/verilator_counter_vcd')])
-env.Append(CPPPATH=[Dir('/home/csx/workland/mycode/gem5-custom/ext/custom/model_counter/verilator_counter_vcd')])
+## We need to use `srcnode` to specify a src path instead of using build path.
+## Gem5 takes out-of-tree building so that src path and build path are different
+env.Append(CPPPATH=[Dir('.').srcnode()])
+env.Append(CPPPATH=[Dir('model_counter/verilator_counter_vcd').srcnode()])
 ## Find the library path and add library
 env.Append(LIBS=['VerilatorCounter'])
-env.Prepend(LIBPATH=Dir('/home/csx/workland/mycode/gem5-custom/ext/custom'))
+env.Prepend(LIBPATH=Dir('.').srcnode())
 env.Append(CPPDEFINES=['VM_SC=0', 'VM_TRACE=1','VL_THREADED=0'])
