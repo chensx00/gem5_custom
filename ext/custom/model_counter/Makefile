@@ -11,7 +11,7 @@ verilate_vcd: $(OBJS)
 
 library_vcd: verilate_vcd wrapper_counter.cc wrapper_counter.hh
 	g++ -I $(DIR_VCD) -I$(VERILATOR_ROOT)/include wrapper_counter.cc $(DIR_VCD)/*.cpp \
-	$(shell python ../extract_verilator.py $(VERILATOR_ROOT)/include/ $(DIR_VCD) VTop.mk) \
+	$(shell python3 ../extract_verilator.py $(VERILATOR_ROOT)/include/ $(DIR_VCD) VTop.mk) \
 	-fpic  -shared -o libVerilatorCounter.so
 
 install: libVerilatorCounter.so
