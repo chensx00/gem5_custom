@@ -14,7 +14,7 @@
 
 namespace gem5
 {
- 
+
 namespace minor
 {
 
@@ -36,7 +36,7 @@ class Custom : public Named
                 CustomInstPort(std::string name, Custom &custom_, MinorCPU &cpu) :
                     MinorCPU::MinorCPUPort(name, cpu), custom(custom_)
                 { }
-            
+
             protected:
                 bool recvTimingResp(PacketPtr ptk) override { panic("dont imp recvTimingResp"); }
 
@@ -73,7 +73,7 @@ class Custom : public Named
         void SendToRTL(MinorDynInstPtr inst);
 
         Port & getPort(const std::string &if_name, PortID idx=InvalidPortID);
-        
+
 
 
 
@@ -90,4 +90,4 @@ class Custom : public Named
 
 
 
-#endif 
+#endif

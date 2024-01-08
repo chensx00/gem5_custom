@@ -58,7 +58,7 @@ system.mem_ctrl.port = system.membus.mem_side_ports
 
 system.system_port = system.membus.cpu_side_ports
 
-#system.custom.custominst_port = system.membus.cpu_side_ports
+# system.custom.custominst_port = system.membus.cpu_side_ports
 
 system.cpu.custominst_port = system.counter.counter_port
 
@@ -75,7 +75,7 @@ binary = os.path.join(
     thispath,
     "../../",
     "custom_test/float"
-    #"tests/test-progs/hello/bin/riscv/linux/hello",
+    # "tests/test-progs/hello/bin/riscv/linux/hello",
 )
 
 system.workload = SEWorkload.init_compatible(binary)

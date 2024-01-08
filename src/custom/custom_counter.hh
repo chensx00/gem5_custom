@@ -12,7 +12,7 @@
 
 namespace gem5
 {
-    
+
 class CustomCounter : public CustomObj
 {
     private:
@@ -31,7 +31,7 @@ class CustomCounter : public CustomObj
 
             PacketPtr blockedPacket;
         public:
-            CPUSidePort(const std::string& name, CustomCounter *owner) : 
+            CPUSidePort(const std::string& name, CustomCounter *owner) :
                 ResponsePort(name) ,owner(owner), needRetry(false),
                 blockedPacket(nullptr)
             { }
@@ -49,7 +49,7 @@ class CustomCounter : public CustomObj
     bool handleRequest(PacketPtr pkt);//override;
 
     //bool handleResponse(PacketPtr pkt);
-    void recvFunctional(PacketPtr pkt);//override;    
+    void recvFunctional(PacketPtr pkt);//override;
 
     bool needRetry;
     AddrRangeList getAddrRanges() const;
@@ -62,7 +62,7 @@ class CustomCounter : public CustomObj
         CustomCounter(const CustomCounterParams &params);
         ~CustomCounter();
         Port &getPort(const std::string &if_name, PortID idx=InvalidPortID) override;
-        
+
         //wrapper pointer
         Wrapper_counter *wr;
 

@@ -33,7 +33,7 @@ CustomObj::CPUSidePort::getAddrRanges() const
     return owner->getAddrRanges();
 }
 
-void 
+void
 CustomObj::CPUSidePort::recvFunctional(PacketPtr pkt)
 {
     return owner->recvFunctional(pkt);
@@ -50,7 +50,7 @@ CustomObj::CPUSidePort::recvTimingReq(PacketPtr pkt)
     }
 }
 
-void 
+void
 CustomObj::CPUSidePort::sendPacket(PacketPtr pkt)
 {
     panic_if(blockedPacket != nullptr, "Should never try to send if blocked!\n");
@@ -81,16 +81,16 @@ CustomObj::CPUSidePort::trySendRetry()
 }
 
 
-AddrRangeList 
+AddrRangeList
 CustomObj::getAddrRanges() const
 {
-    
+
 }
 
-void 
+void
 CustomObj::recvFunctional(PacketPtr pkt)
 {
-    
+
 }
 
 bool
@@ -111,7 +111,7 @@ handle custome inst
     return true;
 }
 
-void 
+void
 CustomObj::handleInst()
 {
     assert(blocked);

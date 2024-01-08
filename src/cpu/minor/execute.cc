@@ -1914,7 +1914,7 @@ Execute::getCustPort()
 }
 
 /*  */
-void 
+void
 Execute::SendToCustom(MinorDynInstPtr inst)
 {
     DPRINTF(CustomObj, "SendToCustom[%d]\n", curTick());
