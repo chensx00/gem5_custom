@@ -1,407 +1,90 @@
-# gem5_custom
-
-这是针对gem5的扩展性的修改
-
-## 指令流
-
-新指令通过LSQ与外界交流。
-
-首先修改新指令的属性，必须要是`inst->isMemRef()`，才能在`execute:issue`中push到`inFUMemInsts`。
-
-`isMemRef()`定义在`dyn_inst.hh:259`中
-
-~~~c++\
-    bool isMemRef() const { return isInst() && staticInst->isMemRef(); }
-~~~
-
-`isMemRef`定义在`src/cpu/static_inst.hh:static_inst.hh:142`
-
-~~~c++
-isMemRef() const
-{
-        return flags[IsLoad] || flags[IsStore] || flags[IsAtomic];
-}
-~~~
-
-
-
-属性定义在`static_inst:207:setFlag`
-
-枚举量`Flag`的定义在`src/cpu/StaticInstFlags.py:49`
-
-`setFlag`在`src/arch/riscv/isa/formats/amo.isa`中被调用。
-
-
-
-
-
-先修改浮点指令，在`src/cpu/minor/fetch2.cc:423`中
-
-~~~c++
-else if (decoded_inst->isFloating())
-	stats.fpInstructions++;
-~~~
-
-
-
-
-
-> ## 作废
->
-> ### issue
->
-> 在`execute:issue`中修改`isFloating`的分支，也送入`InFuMemInst`
->
-> ~~~c++
-> issued_mem_ref = inst->isMemRef() || inst->isFloating();
-> ~~~
->
-> ### commit
->
-> 
->
-> pop LSQ阶段：
->
-> ~~~c++
->   if (completed_inst && (inst->isMemRef() || inst->isFloating() ))
-> ~~~
->
-> 
->
-> 
-
-### 添加函数
-
-`void SendToCustom();`
-
-
-
-
-
-
-
-
-
-### commitInst
-
-
-
-
-
-
-
-
-
-## gem5系统
-
-MinorCPU
-
-### execute.cc
-
-在execute的构造函数中添加rtl目录下的构造函数
-
-~~~c++
-    custom(name_ + ".custom", name_ + ".custominst_port",
-        cpu_, *this,
-
-        ),
-    
-~~~
-
-execute的include
-
-~~~c++
-#include "debug/MemObject.hh"
-~~~
-
-
-
-在execute的.hh函数中声明rtl目录下的函数
-
-~~~c++
-#include "cpu/minor/custom.hh"
-
-//添加新函数
-
-    /* Send To MemObject */
-    void SendToCustom(MinorDynInstPtr inst)
-~~~
-
-
-
-~~~c++
-    /* Custom Inst */
-    Custom custom;
-~~~
-
-
-
-在execute的SConscript文件中添加
-
-~~~python
-    Source('custom.cc')
-
-    DebugFlag('Custom', 'CustomInstPort')
-~~~
-
-
-
->## 作废
->
->在`src/cpu/minor/BaseMinorCPU.py`中添加
->
->~~~c++
->custominst_port = RequestPort("CustomInst Port")
->~~~
-
-
-
-
-
-> ## 作废
->
-> 在`src/cpu/BaseCPU.py`中添加
->
-> ~~~c++
-> custominst_port = RequestPort("CustomInst Port")
-> 
->       _cached_ports = ["icache_port", "dcache_port", "custominst_port"]
-> ~~~
->
-> 在`src/cpu/base.cc`中`getPort`函数添加：
->
-> ~~~c++
-> else if (if_name == "custominst_port")
->   return getCustPort();
-> 
-> 
-> 
-> getCustPort().takeOverFrom(&oldCPU->getCustPort());
-> ~~~
->
-> 在`src/cpu/base.hh`中添加`getCustPort()`：
->
-> ~~~c++
-> /** Custom*/
-> virtual Port &getCustPort() = 0;
-> 
-> 
-> 
-> 
-> ~~~
->
-> 
->
-> 
-
-
-
-
-
-
-
->## 作废
->
->在`src/cpu/kvm/base.hh`中添加
->
->~~~c++
->Port &getCustPort()  { return custPort; }
->
->
->
->/** Unused port*/
->KVMCpuPort custPort;
->~~~
->
->
-
-
-
-貌似不用再bash里面改。
-
-直接在minor/cpu里面加一个getPort
-
-`src/cpu/minor/cpu.hh`
-
-~~~c++
-Port &getPort(const std::string &if_name, PortID idx=InvalidPortID) override;
-~~~
-
-.cc
-
-~~~c++
-Port &
-MinorCPU::getPort(const std::string &if_name, PortID idx)
-{
-    if (if_name == "custominst_port")
-        return getCustPort();
-    else
-        return getCustPort();
-}
-~~~
-
-
-
-
-
-在`src/cpu/minor/cpu.hh`中添加`getCustPort()`
-
-~~~c++
-    /** Return a reference to custom*/
-    Port &getCustPort() override;
-~~~
-
-
-
-在`src/cpu/minor/cpu.cc`中添加`getCustPort()`
-
-~~~c++
-Port &
-MinorCPU::getCustPort()
-{
-    return pipeline->getCustPort();
-}
-~~~
-
-
-
-
-
-在`src/cpu/minor/pipeline.cc`中添加`getCustPort()`
-
-~~~c++
-MinorCPU::MinorCPUPort &
-Pipeline::getCustPort()
-{
-    return execute.getCustPort();
-}
-~~~
-
-在`src/cpu/minor/pipeline.hh`中添加`getCustPort()`
-
-~~~c++
-    /** Return the CustomInstPort belonging to Execute for the CPU */
-    MinorCPU::MinorCPUPort &getCustPort();
-~~~
-
-在`src/cpu/minor/execute.hh`中添加`getCustPort()`
-
-~~~c++
-    /** Return the CustomPort*/
-    MinorCPU::MinorCPUPort &getCustPort();
-~~~
-
-在`src/cpu/minor/execute.cc`中添加`getCustPort()`
-
-~~~c++
-MinorCPU::MinorCPUPort &
-Execute::getCustPort()
-{
-    return custom.getCustPort();
-}
-~~~
-
-
-
-
-
-在`src/cpu/minor/lsq.hh`中添加`getCustPort()`
-
-~~~c++
-    /** Return the CustomInst port */
-    MinorCPU::MinorCPUPort &getCustPort() { return custmoInstPort; }
-~~~
-
-
-
-
-
-
-
-### RTL
-
-添加src/cpu/rtl文件夹
-
-修改rtl目录下的`SConscript:50`
-
-添加debug标志：`DebugFlag('MemObject', 'Custom inst')`
-
-## 交叉工具链编译
-
-交叉工具链安装
-
-~~~sh
-cd ~/Work/riscv/riscv-gnu-toolchain
-./configure --prefix=/home/yangchun/Work/riscv/rv64g-linux-gnu --disable-gdb --with-arch=rv64g --with-gcc-src=/home/yangchun/Work/riscv/gcc-11.2.0 --with-binutils-src=/home/yangchun/Work/riscv/binutils-2.35 --with-glibc-src=/home/yangchun/Work/riscv/glibc-2.35
-make linux -j $(nproc)
-~~~
-
-编译文件
-
-~~~sh
-/home/csx/sw/riscv/rv64g-linux-gnu/bin/riscv64-unknown-linux-gnu-gcc -static -v -o [outfile] [infile]
-~~~
-
-## 重新构建gem5
-
-~~~bash
-scons build/RISCV/gem5.opt
-~~~
-
-## 运行gem5
-
-~~~c++
-build/RISCV/gem5.opt configs/custom/riscv-floating.py 
-~~~
-
-打开debug
-
-~~~bash
-build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating.py 
-~~~
-
-
-
-
-
-
-
-
-
-## 运行counter
-
-
-
-有一些编译的小问题
-
-#### 第一个
-
-ext/custom/SConscript里面库路径还用的绝对路径，还待解决
-
-#### 第二个
-
-报错
-
-~~~bash
-root@CsxDesktop:/home/csx/workland/mycode/gem5-custom# build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating-counter.py 
-build/RISCV/gem5.opt: error while loading shared libraries: libVerilatorCounter.so: cannot open shared object file: No such file or directory
-~~~
-
-找不到这个动态链接库，强行加一下：
-
-~~~bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/csx/workland/mycode/gem5-custom/ext/custom
-~~~
-
-
-
-
-
-
-
-
-
-
-
-
-
+# The gem5 Simulator
+
+This is the repository for the gem5 simulator. It contains the full source code
+for the simulator and all tests and regressions.
+
+The gem5 simulator is a modular platform for computer-system architecture
+research, encompassing system-level architecture as well as processor
+microarchitecture. It is primarily used to evaluate new hardware designs,
+system software changes, and compile-time and run-time system optimizations.
+
+The main website can be found at <http://www.gem5.org>.
+
+## Getting started
+
+A good starting point is <http://www.gem5.org/about>, and for
+more information about building the simulator and getting started
+please see <http://www.gem5.org/documentation> and
+<http://www.gem5.org/documentation/learning_gem5/introduction>.
+
+## Building gem5
+
+To build gem5, you will need the following software: g++ or clang,
+Python (gem5 links in the Python interpreter), SCons, zlib, m4, and lastly
+protobuf if you want trace capture and playback support. Please see
+<http://www.gem5.org/documentation/general_docs/building> for more details
+concerning the minimum versions of these tools.
+
+Once you have all dependencies resolved, execute
+`scons build/ALL/gem5.opt` to build an optimized version of the gem5 binary
+(`gem5.opt`) containing all gem5 ISAs. If you only wish to compile gem5 to
+include a single ISA, you can replace `ALL` with the name of the ISA. Valid
+options include `ARM`, `NULL`, `MIPS`, `POWER`, `SPARC`, and `X86` The complete
+list of options can be found in the build_opts directory.
+
+See https://www.gem5.org/documentation/general_docs/building for more
+information on building gem5.
+
+## The Source Tree
+
+The main source tree includes these subdirectories:
+
+* build_opts: pre-made default configurations for gem5
+* build_tools: tools used internally by gem5's build process.
+* configs: example simulation configuration scripts
+* ext: less-common external packages needed to build gem5
+* include: include files for use in other programs
+* site_scons: modular components of the build system
+* src: source code of the gem5 simulator. The C++ source, Python wrappers, and Python standard library are found in this directory.
+* system: source for some optional system software for simulated systems
+* tests: regression tests
+* util: useful utility programs and files
+
+## gem5 Resources
+
+To run full-system simulations, you may need compiled system firmware, kernel
+binaries and one or more disk images, depending on gem5's configuration and
+what type of workload you're trying to run. Many of these resources can be
+obtained from <https://resources.gem5.org>.
+
+More information on gem5 Resources can be found at
+<https://www.gem5.org/documentation/general_docs/gem5_resources/>.
+
+## Getting Help, Reporting bugs, and Requesting Features
+
+We provide a variety of channels for users and developers to get help, report
+bugs, requests features, or engage in community discussions. Below
+are a few of the most common we recommend using.
+
+* **GitHub Discussions**: A GitHub Discussions page. This can be used to start
+discussions or ask questions. Available at
+<https://github.com/orgs/gem5/discussions>.
+* **GitHub Issues**: A GitHub Issues page for reporting bugs or requesting
+features. Available at <https://github.com/gem5/gem5/issues>.
+* **Jira Issue Tracker**: A Jira Issue Tracker for reporting bugs or requesting
+features. Available at <https://gem5.atlassian.net/>.
+* **Slack**: A Slack server with a variety of channels for the gem5 community
+to engage in a variety of discussions. Please visit
+<https://www.gem5.org/join-slack> to join.
+* **gem5-users@gem5.org**: A mailing list for users of gem5 to ask questions
+or start discussions. To join the mailing list please visit
+<https://www.gem5.org/mailing_lists>.
+* **gem5-dev@gem5.org**: A mailing list for developers of gem5 to ask questions
+or start discussions. To join the mailing list please visit
+<https://www.gem5.org/mailing_lists>.
+
+## Contributing to gem5
+
+We hope you enjoy using gem5. When appropriate we advise charing your
+contributions to the project. <https://www.gem5.org/contributing> can help you
+get started. Additional information can be found in the CONTRIBUTING.md file.
