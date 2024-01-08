@@ -1,3 +1,5 @@
+#include "VTop.h"
+#include "verilated_vcd_c.h"
 #include "wrapper_counter.hh"
 
 Wrapper_counter::Wrapper_counter(bool traceOn, std::string name):

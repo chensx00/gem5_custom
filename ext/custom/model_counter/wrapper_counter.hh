@@ -3,16 +3,11 @@
 
 #include <cstdlib>
 #include <iostream>
-#include "VTop.h"
-//#include "/home/csx/sw/verilator/v4.100/include/verilated.h"
-#include "verilated.h"
-//#include "/home/csx/sw/verilator/v4.100/include/verilated_fst_c.h"
-//#include "verilated_fst_c.h"
-//#include "/home/csx/sw/verilator/v4.100/include/verilated_vcd_c.h"
-#include "verilated_vcd_c.h"
 
 #include "custom_packet_counter.hh"
 
+class VTop;
+class VerilatedVcdC;
 
 class Wrapper_counter
 {
