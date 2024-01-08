@@ -54,7 +54,7 @@ else if (decoded_inst->isFloating())
 >
 > ### commit
 >
-> 
+>
 >
 > pop LSQ阶段：
 >
@@ -62,9 +62,9 @@ else if (decoded_inst->isFloating())
 >   if (completed_inst && (inst->isMemRef() || inst->isFloating() ))
 > ~~~
 >
-> 
 >
-> 
+>
+>
 
 ### 添加函数
 
@@ -101,7 +101,7 @@ MinorCPU
         cpu_, *this,
 
         ),
-    
+
 ~~~
 
 execute的include
@@ -160,7 +160,7 @@ execute的include
 >
 > ~~~c++
 > custominst_port = RequestPort("CustomInst Port")
-> 
+>
 >       _cached_ports = ["icache_port", "dcache_port", "custominst_port"]
 > ~~~
 >
@@ -169,9 +169,9 @@ execute的include
 > ~~~c++
 > else if (if_name == "custominst_port")
 >   return getCustPort();
-> 
-> 
-> 
+>
+>
+>
 > getCustPort().takeOverFrom(&oldCPU->getCustPort());
 > ~~~
 >
@@ -180,15 +180,15 @@ execute的include
 > ~~~c++
 > /** Custom*/
 > virtual Port &getCustPort() = 0;
-> 
-> 
-> 
-> 
+>
+>
+>
+>
 > ~~~
 >
-> 
 >
-> 
+>
+>
 
 
 
@@ -347,13 +347,13 @@ scons build/RISCV/gem5.opt
 ## 运行gem5
 
 ~~~c++
-build/RISCV/gem5.opt configs/custom/riscv-floating.py 
+build/RISCV/gem5.opt configs/custom/riscv-floating.py
 ~~~
 
 打开debug
 
 ~~~bash
-build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating.py 
+build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating.py
 ~~~
 
 
@@ -361,7 +361,7 @@ build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating.py
 运行counter
 
 ~~~bash
-build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating-counter.py 
+build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating-counter.py
 ~~~
 
 
@@ -387,7 +387,7 @@ ext/custom/SConscript里面库路径还用的绝对路径，还待解决
 报错
 
 ~~~bash
-root@CsxDesktop:/home/csx/workland/mycode/gem5-custom# build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating-counter.py 
+root@CsxDesktop:/home/csx/workland/mycode/gem5-custom# build/RISCV/gem5.opt --debug-flags=CustomObj configs/custom/riscv-floating-counter.py
 build/RISCV/gem5.opt: error while loading shared libraries: libVerilatorCounter.so: cannot open shared object file: No such file or directory
 ~~~
 
@@ -396,16 +396,3 @@ build/RISCV/gem5.opt: error while loading shared libraries: libVerilatorCounter.
 ~~~bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/csx/workland/mycode/gem5_custom/ext/custom
 ~~~
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -45,7 +45,7 @@ Custom::SendToRTL(MinorDynInstPtr inst)
     Custom::tryToSend(packet);
 }
 
-bool 
+bool
 Custom::tryToSend(PacketPtr pkt)
 {
     DPRINTF(CustomObj, "customInstPort sendTimingReq:%d\n", curTick());
@@ -55,7 +55,7 @@ Custom::tryToSend(PacketPtr pkt)
     return false;
 }
 
-void 
+void
 Custom::recvReqRetry()
 {
     DPRINTF(CustomObj, "customInstPort recvReqRetry:%d\n", curTick());
@@ -63,7 +63,7 @@ Custom::recvReqRetry()
 }
 
 
-Port & 
+Port &
 Custom::getPort(const std::string &if_name, PortID idx)
 {
     if (if_name == "custominst_port")
@@ -75,5 +75,3 @@ Custom::getPort(const std::string &if_name, PortID idx)
 } //End namespace minor
 
 } //End namespace gem5
-
-

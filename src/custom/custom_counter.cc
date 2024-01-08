@@ -38,7 +38,7 @@ CustomCounter::CPUSidePort::getAddrRanges() const
     return owner->getAddrRanges();
 }
 
-void 
+void
 CustomCounter::CPUSidePort::recvFunctional(PacketPtr pkt)
 {
     return owner->recvFunctional(pkt);
@@ -55,7 +55,7 @@ CustomCounter::CPUSidePort::recvTimingReq(PacketPtr pkt)
     }
 }
 
-void 
+void
 CustomCounter::CPUSidePort::sendPacket(PacketPtr pkt)
 {
     panic_if(blockedPacket != nullptr, "Should never try to send if blocked!\n");
@@ -86,16 +86,16 @@ CustomCounter::CPUSidePort::trySendRetry()
 }
 
 
-AddrRangeList 
+AddrRangeList
 CustomCounter::getAddrRanges() const
 {
-    
+
 }
 
-void 
+void
 CustomCounter::recvFunctional(PacketPtr pkt)
 {
-    
+
 }
 
 //---------------------------//
@@ -125,7 +125,7 @@ CustomCounter::handleInst()
     assert(blocked);
     DPRINTF(CustomObj, "handle float inst at %d \n", curTick());
     reset();
-    
+
     input.ena = 1;
     input.rst = 0;
     tick();
@@ -145,7 +145,7 @@ void
 CustomCounter::tick()
 {
     DPRINTF(CustomObj, "tick at %d \n", curTick());
-    
+
     outputCounter out = wr->tick(input);
 
     DPRINTF(CustomObj, "out.cnt = %d \n", out.cnt);
@@ -174,7 +174,7 @@ CustomCounter::reset()
     wr->reset();
 }
 
-void 
+void
 CustomCounter::initRTLModel()
 {
     //traceOn = true
@@ -184,7 +184,7 @@ CustomCounter::initRTLModel()
     //DPRINTF(CustomObj, "out.cnt = %d \n", curTick());
 }
 
-void 
+void
 CustomCounter::endRTLModel()
 {
     DPRINTF(CustomObj, "endRTLModel at %d \n", curTick());

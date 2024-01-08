@@ -8,4 +8,3 @@ Source('custom_obj.cc')
 Source('custom_counter.cc')
 
 DebugFlag('CustomObj', "Custom Inst")
-

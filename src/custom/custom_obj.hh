@@ -34,7 +34,7 @@ class CustomObj : public SimObject
             PacketPtr blockedPacket;
 
         public:
-            CPUSidePort(const std::string& name, CustomObj *owner) : 
+            CPUSidePort(const std::string& name, CustomObj *owner) :
                 ResponsePort(name) ,owner(owner), needRetry(false),
                 blockedPacket(nullptr)
             { }
@@ -55,13 +55,13 @@ class CustomObj : public SimObject
 
     };
 
-    
+
 
     bool handleRequest(PacketPtr pkt);
 
     //bool handleResponse(PacketPtr pkt);
     void recvFunctional(PacketPtr pkt);
-    
+
 
     bool needRetry;
 
@@ -70,7 +70,7 @@ class CustomObj : public SimObject
     CPUSidePort instPort;
 
     bool blocked;
-    
+
 
     public:
 
@@ -82,14 +82,14 @@ class CustomObj : public SimObject
         //interface to RTL model
         //this function will call tick() in wrapper_xxx
         //virtual void tick();
-            
+
         //virtual void initRTLModel();
 
         //virtual void endRTLModel();
 
-    
+
 };
 
 } // End namespace gem5
 
-#endif 
+#endif
