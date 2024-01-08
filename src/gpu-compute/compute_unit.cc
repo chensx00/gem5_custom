@@ -50,6 +50,7 @@
 #include "gpu-compute/gpu_command_processor.hh"
 #include "gpu-compute/gpu_dyn_inst.hh"
 #include "gpu-compute/gpu_static_inst.hh"
+#include "gpu-compute/register_file_cache.hh"
 #include "gpu-compute/scalar_register_file.hh"
 #include "gpu-compute/shader.hh"
 #include "gpu-compute/simple_pool_manager.hh"
@@ -82,9 +83,11 @@ ComputeUnit::ComputeUnit(const Params &p) : ClockedObject(p),
           false, Event::CPU_Tick_Pri),
     cu_id(p.cu_id),
     vrf(p.vector_register_file), srf(p.scalar_register_file),
+    rfc(p.register_file_cache),
     simdWidth(p.simd_width),
     spBypassPipeLength(p.spbypass_pipe_length),
     dpBypassPipeLength(p.dpbypass_pipe_length),
+    rfcPipeLength(p.rfc_pipe_length),
     scalarPipeStages(p.scalar_pipe_length),
     operandNetworkLength(p.operand_network_length),
     issuePeriod(p.issue_period),
@@ -207,6 +210,7 @@ ComputeUnit::ComputeUnit(const Params &p) : ClockedObject(p),
 
     for (int i = 0; i < vrf.size(); ++i) {
         vrf[i]->setParent(this);
+        rfc[i]->setParent(this);
     }
     for (int i = 0; i < srf.size(); ++i) {
         srf[i]->setParent(this);
@@ -383,6 +387,13 @@ ComputeUnit::startWavefront(Wavefront *w, int waveId, LdsChunk *ldsChunk,
 
     stats.waveLevelParallelism.sample(activeWaves);
     activeWaves++;
+
+    panic_if(w->wrGmReqsInPipe, "GM write counter for wavefront non-zero\n");
+    panic_if(w->rdGmReqsInPipe, "GM read counter for wavefront non-zero\n");
+    panic_if(w->wrLmReqsInPipe, "LM write counter for wavefront non-zero\n");
+    panic_if(w->rdLmReqsInPipe, "GM read counter for wavefront non-zero\n");
+    panic_if(w->outstandingReqs,
+             "Outstanding reqs counter for wavefront non-zero\n");
 }
 
 /**
@@ -1909,6 +1920,8 @@ ComputeUnit::updateInstStats(GPUDynInstPtr gpuDynInst)
                 stats.flatVMemInsts++;
             }
         } else if (gpuDynInst->isFlatGlobal()) {
+            stats.flatVMemInsts++;
+        } else if (gpuDynInst->isFlatScratch()) {
             stats.flatVMemInsts++;
         } else if (gpuDynInst->isLocalMem()) {
             stats.ldsNoFlatInsts++;

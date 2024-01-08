@@ -38,6 +38,7 @@
 #include "debug/GPUVRF.hh"
 #include "gpu-compute/compute_unit.hh"
 #include "gpu-compute/gpu_static_inst.hh"
+#include "gpu-compute/register_file_cache.hh"
 #include "gpu-compute/scalar_register_file.hh"
 #include "gpu-compute/vector_register_file.hh"
 #include "gpu-compute/wavefront.hh"
@@ -579,7 +580,7 @@ ScheduleStage::fillDispatchList()
                     // operation.
                     GPUDynInstPtr mp = schIter->first;
                     if (!mp->isMemSync() && !mp->isScalar() &&
-                        (mp->isGlobalMem() || mp->isFlat())) {
+                        mp->needsToken()) {
                         computeUnit.globalMemoryPipe.acqCoalescerToken(mp);
                     }
 

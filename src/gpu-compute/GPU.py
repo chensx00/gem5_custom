@@ -27,17 +27,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from m5.citations import add_citation
 from m5.defines import buildEnv
-from m5.params import *
-from m5.proxy import *
-from m5.SimObject import SimObject
-
 from m5.objects.Bridge import Bridge
 from m5.objects.ClockedObject import ClockedObject
 from m5.objects.Device import DmaVirtDevice
 from m5.objects.LdsState import LdsState
 from m5.objects.Process import EmulatedDriver
 from m5.objects.VegaGPUTLB import VegaPagetableWalker
+from m5.params import *
+from m5.proxy import *
+from m5.SimObject import SimObject
 
 
 class PrefetchType(Enum):
@@ -95,6 +95,14 @@ class VectorRegisterFile(RegisterFile):
     cxx_header = "gpu-compute/vector_register_file.hh"
 
 
+class RegisterFileCache(SimObject):
+    type = "RegisterFileCache"
+    cxx_class = "gem5::RegisterFileCache"
+    cxx_header = "gpu-compute/register_file_cache.hh"
+    simd_id = Param.Int("SIMD ID associated with this Register File Cache")
+    cache_size = Param.Int(0, "number of entries of rfc")
+
+
 class RegisterManager(SimObject):
     type = "RegisterManager"
     cxx_class = "gem5::RegisterManager"
@@ -130,7 +138,7 @@ class ComputeUnit(ClockedObject):
     # Wavefront size is 64. This is configurable, however changing
     # this value to anything other than 64 will likely cause errors.
     wf_size = Param.Int(64, "Wavefront size (in work items)")
-    num_barrier_slots = Param.Int(4, "Number of barrier slots in a CU")
+    num_barrier_slots = Param.Int(16, "Number of barrier slots in a CU")
     num_SIMDs = Param.Int(4, "number of SIMD units per CU")
     num_scalar_cores = Param.Int(1, "number of Scalar cores per CU")
     num_scalar_mem_pipes = Param.Int(
@@ -149,6 +157,11 @@ class ComputeUnit(ClockedObject):
     dpbypass_pipe_length = Param.Int(
         4, "vector ALU Double Precision bypass latency"
     )
+
+    rfc_pipe_length = Param.Int(
+        2, "number of cycles per register file cache access"
+    )
+
     scalar_pipe_length = Param.Int(1, "number of pipe stages per scalar ALU")
     issue_period = Param.Int(4, "number of cycles per issue period")
 
@@ -260,6 +273,9 @@ class ComputeUnit(ClockedObject):
     scalar_register_file = VectorParam.ScalarRegisterFile(
         "Scalar register file"
     )
+
+    register_file_cache = VectorParam.RegisterFileCache("Register file cache")
+
     out_of_order_data_delivery = Param.Bool(
         False, "enable OoO data delivery in the GM pipeline"
     )
@@ -356,3 +372,35 @@ class StorageClassType(Enum):
         "SC_ARG",
         "SC_NONE",
     ]
+
+
+add_citation(
+    ComputeUnit,
+    """@inproceedings{Gutierrez:2018:amdgpu,
+  author       = {Anthony Gutierrez and
+                  Bradford M. Beckmann and
+                  Alexandru Dutu and
+                  Joseph Gross and
+                  Michael LeBeane and
+                  John Kalamatianos and
+                  Onur Kayiran and
+                  Matthew Poremba and
+                  Brandon Potter and
+                  Sooraj Puthoor and
+                  Matthew D. Sinclair and
+                  Mark Wyse and
+                  Jieming Yin and
+                  Xianwei Zhang and
+                  Akshay Jain and
+                  Timothy G. Rogers},
+  title        = {Lost in Abstraction: Pitfalls of Analyzing GPUs at the Intermediate
+                  Language Level},
+  booktitle    = {{IEEE} International Symposium on High Performance Computer Architecture,
+                  {HPCA} 2018, Vienna, Austria, February 24-28, 2018},
+  pages        = {608--619},
+  publisher    = {{IEEE} Computer Society},
+  year         = {2018},
+  url          = {https://doi.org/10.1109/HPCA.2018.00058},
+  doi          = {10.1109/HPCA.2018.00058}
+}""",
+)
