@@ -1,0 +1,3 @@
+[submodule "ext/custom/rvv_core_wrapper/rvv_core"]
+	path = ext/custom/rvv_core_wrapper/rvv_core
+	url = https://github.com/ckf104/rvv-core
