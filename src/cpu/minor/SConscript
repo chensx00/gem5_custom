@@ -45,7 +45,7 @@ if env['CONF']['BUILD_ISA']:
         'MinorOpClass', 'MinorOpClassSet', 'MinorFUTiming', 'MinorFU',
         'MinorFUPool', 'BaseMinorCPU'],
         enums=['ThreadPolicy'])
-    
+
 
 
     Source('activity.cc')
@@ -61,10 +61,6 @@ if env['CONF']['BUILD_ISA']:
     Source('pipeline.cc')
     Source('scoreboard.cc')
     Source('stats.cc')
-    
-    Source('custom.cc')
-
-    
 
     DebugFlag('MinorCPU', 'Minor CPU-level events')
     DebugFlag('MinorExecute', 'Minor Execute stage')
@@ -74,7 +70,7 @@ if env['CONF']['BUILD_ISA']:
     DebugFlag('MinorTrace', 'MinorTrace cycle-by-cycle state trace')
     DebugFlag('MinorTiming', 'Extra timing for instructions')
 
-    
+
 
     CompoundFlag('Minor', [
         'MinorCPU', 'MinorExecute', 'MinorInterrupt', 'MinorMem',

@@ -136,8 +136,6 @@ class Pipeline : public Ticked
     MinorCPU::MinorCPUPort &getInstPort();
     /** Return the DcachePort belonging to Execute for the CPU */
     MinorCPU::MinorCPUPort &getDataPort();
-    /** Return the CustomInstPort belonging to Execute for the CPU */
-    MinorCPU::MinorCPUPort &getCustPort();
 
     /** To give the activity recorder to the CPU */
     MinorActivityRecorder *getActivityRecorder() { return &activityRecorder; }

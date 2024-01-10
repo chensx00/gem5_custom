@@ -45,19 +45,19 @@
 #define __CPU_MINOR_CPU_HH__
 
 #include "base/compiler.hh"
+#include "base/logging.hh"
 #include "base/random.hh"
 #include "cpu/base.hh"
 #include "cpu/minor/activity.hh"
+#include "cpu/minor/dyn_inst.hh"
 #include "cpu/minor/stats.hh"
 #include "cpu/simple_thread.hh"
 #include "enums/ThreadPolicy.hh"
 #include "params/BaseMinorCPU.hh"
 
-namespace gem5
-{
+namespace gem5 {
 
-namespace minor
-{
+namespace minor {
 
 /** Forward declared to break the cyclic inclusion dependencies between
  *  pipeline and cpu */
@@ -109,24 +109,19 @@ class MinorCPU : public BaseCPU
         MinorCPU &cpu;
 
       public:
-        MinorCPUPort(const std::string& name_, MinorCPU &cpu_)
-            : RequestPort(name_), cpu(cpu_)
-        { }
-
+        MinorCPUPort(const std::string &name_, MinorCPU &cpu_)
+            : RequestPort(name_), cpu(cpu_) {}
     };
 
     /** Thread Scheduling Policy (RoundRobin, Random, etc) */
     enums::ThreadPolicy threadPolicy;
+
   protected:
-     /** Return a reference to the data port. */
+    /** Return a reference to the data port. */
     Port &getDataPort() override;
 
     /** Return a reference to the instruction port. */
     Port &getInstPort() override;
-
-
-    /** Return a reference to custom*/
-    Port &getCustPort() ;//override;
 
   public:
     MinorCPU(const BaseMinorCPUParams &params);
@@ -134,9 +129,6 @@ class MinorCPU : public BaseCPU
     ~MinorCPU();
 
   public:
-
-    Port &getPort(const std::string &if_name, PortID idx=InvalidPortID) override;
-
     /** Starting, waking and initialisation */
     void init() override;
     void startup() override;
@@ -176,8 +168,7 @@ class MinorCPU : public BaseCPU
     void suspendContext(ThreadID thread_id) override;
 
     /** Thread scheduling utility functions */
-    std::vector<ThreadID> roundRobinPriority(ThreadID priority)
-    {
+    std::vector<ThreadID> roundRobinPriority(ThreadID priority) {
         std::vector<ThreadID> prio_list;
         for (ThreadID i = 1; i <= numThreads; i++) {
             prio_list.push_back((priority + i) % numThreads);
@@ -185,15 +176,13 @@ class MinorCPU : public BaseCPU
         return prio_list;
     }
 
-    std::vector<ThreadID> randomPriority()
-    {
+    std::vector<ThreadID> randomPriority() {
         std::vector<ThreadID> prio_list;
         for (ThreadID i = 0; i < numThreads; i++) {
             prio_list.push_back(i);
         }
 
-        std::shuffle(prio_list.begin(), prio_list.end(),
-                     random_mt.gen);
+        std::shuffle(prio_list.begin(), prio_list.end(), random_mt.gen);
 
         return prio_list;
     }
@@ -210,6 +199,10 @@ class MinorCPU : public BaseCPU
      *  enumeration Pipeline::StageId */
     void wakeupOnEvent(unsigned int stage_id);
     EventFunctionWrapper *fetchEventWrapper;
+
+    void RVVInstDone(minor::InstId inst_id, bool is_illegal, uint64_t result) {
+        panic("not implemented yet");
+    }
 };
 
 } // namespace gem5

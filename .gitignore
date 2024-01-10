@@ -39,3 +39,6 @@ ext/custom/model_counter/libVerilatorCounter.so
 ext/custom/libVerilatorCounter.so
 ext/custom/custom_packet_counter.hh
 ext/custom/wrapper_counter.hh
+*.o
+*.d
+.cache
