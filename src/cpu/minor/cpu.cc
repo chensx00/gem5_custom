@@ -75,6 +75,8 @@ MinorCPU::MinorCPU(const BaseMinorCPUParams &params) :
     if (params.checker) {
         fatal("The Minor model doesn't support checking (yet)\n");
     }
+    panic_if(params.enableIdling && params.rvvcore, "We currently require"
+        "disabling idling mechanism if rvvcore is enabled");
 
     pipeline = new minor::Pipeline(*this, params);
     activityRecorder = pipeline->getActivityRecorder();
@@ -329,6 +331,11 @@ MinorCPU::totalOps() const
         ret += (*i)->numOp;
 
     return ret;
+}
+
+void MinorCPU::RVVInstDone(const minor::InstId &inst_id, bool is_illegal,
+                           uint64_t result) {
+    pipeline->RVVInstDone(inst_id, is_illegal, result);
 }
 
 } // namespace gem5

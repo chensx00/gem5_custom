@@ -3,11 +3,16 @@
 #include <cassert>
 #include <iostream>
 #include <type_traits>
-#ifdef VM_TRACE_FST
+
+#if defined VM_TRACE_FST && VM_TRACE_FST == 1
 #include "verilated_fst_c.h"
 #define VM_TRACE_CLASS_NAME VerilatedFstC
-#else
+#define WAVEFORM_NAME "rvv_core.fst"
+#elif defined VM_TRACE_VCD && VM_TRACE_VCD == 1
 #include "verilated_vcd_c.h"
+#define VM_TRACE_CLASS_NAME VerilatedVcdC
+#define WAVEFORM_NAME "rvv_core.vcd"
+#else
 #define VM_TRACE_CLASS_NAME VerilatedVcdC
 #endif
 
@@ -15,6 +20,10 @@
 #include "Vrvv_core_core_pkg.h"
 #include "Vrvv_core_rvv_pkg.h"
 #include "rvv_core_wrapper.hh"
+
+static VM_TRACE_CLASS_NAME *getTracer(void *tracer) {
+    return static_cast<VM_TRACE_CLASS_NAME *>(tracer);
+}
 
 namespace rvvcore {
 
@@ -38,7 +47,7 @@ union VecContextUnion {
 };
 
 RVVCoreWrapper::RVVCoreWrapper(uint32_t rst_cycle) : rst_cycle(rst_cycle) {
-    const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};
+    VerilatedContext* contextp = new VerilatedContext;
     // Set debug level, 0 is off, 9 is highest presently used
     // May be overridden by commandArgs argument parsing
     contextp->debug(0);
@@ -47,33 +56,41 @@ RVVCoreWrapper::RVVCoreWrapper(uint32_t rst_cycle) : rst_cycle(rst_cycle) {
     // May be overridden by commandArgs argument parsing
     contextp->randReset(2);
 
-    rvv_core = new Vrvv_core(contextp.get());
+    rvv_core = new Vrvv_core(contextp);
 
 #if VM_TRACE == 1
-    /*contextp->traceEverOn(true);
+    contextp->traceEverOn(true);
     tracer = new VM_TRACE_CLASS_NAME;
-    rvv_core->trace(tracer, 5);
-    tracer->open("rvv_core.fst");*/
+    rvv_core->trace(getTracer(tracer), 99);
+    getTracer(tracer)->open(WAVEFORM_NAME);
 #else
     tracer = nullptr;
 #endif
-    tracer = nullptr; // temporarily disable tracing
+    reset();
 }
 
 RVVCoreWrapper::~RVVCoreWrapper() {
-    if (tracer) {
-        // tracer->close();
-        delete tracer;
-    }
+#if VM_TRACE == 1
+    getTracer(tracer)->close();
+    delete getTracer(tracer);
+#endif
     rvv_core->final();
+    VerilatedContext* ctx = rvv_core->contextp();
     delete rvv_core;
+    delete ctx;
 }
 
 void RVVCoreWrapper::tick() {
     for (int i = 0; i < 2; ++i) {
+        uint32_t d = rvv_core->contextp()->time();
         rvv_core->contextp()->timeInc(1);
+        uint32_t c = rvv_core->contextp()->time();
         rvv_core->clk_i = !rvv_core->clk_i;
         rvv_core->eval();
+#if VM_TRACE == 1
+        // std::cout << "RVVCore dump cycle " << c << std::endl;
+        getTracer(tracer)->dump(c);
+#endif
     }
 }
 
@@ -90,6 +107,10 @@ bool RVVCoreWrapper::setNewRVVInstReq(const rvvcore::RVVInstReq &recv) {
     assert(rvv_core->ready_o &&
            "ready_o should be high before set new RVVInstReq");
     rvv_core->valid_i = true;
+    // TODO: track non-speculative rvvcore and remove
+    // value assignment to `can_commit` signal 
+    rvv_core->insn_can_commit_i = true;
+    rvv_core->insn_can_commit_id_i = recv.inst_id;
     rvv_core->insn_i = recv.inst;
     rvv_core->insn_id_i = recv.inst_id;
 
@@ -124,13 +145,19 @@ void RVVCoreWrapper::reset() {
     rvv_core->flush_i = 0;
     rvv_core->store_op_gnt_i = 0;
     rvv_core->clk_i = 1;
-    rvv_core->rst_ni = 1;
+    // reset of rvv core is active low
+    rvv_core->rst_ni = 0;
     for (int i = 0; i < 2 * rst_cycle; ++i) {
         rvv_core->contextp()->timeInc(1);
         rvv_core->clk_i = !rvv_core->clk_i;
         rvv_core->eval();
+#if VM_TRACE == 1
+        uint32_t c = rvv_core->contextp()->time();
+        // std::cout << "RVVCore dump cycle " << c << std::endl;
+        getTracer(tracer)->dump(c);
+#endif
     }
-    rvv_core->rst_ni = 0;
+    rvv_core->rst_ni = 1;
 }
 
 uint32_t RVVCoreWrapper::getInstIdWidth() {

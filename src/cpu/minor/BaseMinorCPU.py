@@ -313,6 +313,7 @@ class BaseMinorCPU(BaseCPU):
     def support_take_over(cls):
         return True
 
+    rvvcore = Param.RVVCoreRTLObject(NULL, "rvv core connected with this cpu")
     threadPolicy = Param.ThreadPolicy("RoundRobin", "Thread scheduling policy")
     fetch1FetchLimit = Param.Unsigned(
         1, "Number of line fetches allowable in flight at once"

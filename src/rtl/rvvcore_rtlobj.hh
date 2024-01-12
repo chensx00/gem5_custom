@@ -19,9 +19,9 @@ class MinorCPU;
 class RVVCoreRTLObject : public TickedObject
 {
   private:
-    uint64_t last_tick;
-    MinorCPU &cpu;
-    std::unique_ptr<rvvcore::RVVCoreWrapper> rvvCoreWrapper;
+    uint64_t last_tick = 0;
+    MinorCPU *cpu;
+    rvvcore::RVVCoreWrapper* rvvCoreWrapper;
     std::vector<minor::InstId> instIds;
 
     bool getNewInstId(uint32_t &id, minor::InstId &instId);
@@ -30,6 +30,10 @@ class RVVCoreRTLObject : public TickedObject
     RVVCoreRTLObject(const RVVCoreRTLObjectParams &params);
     bool sendNewRVVInst(minor::MinorDynInst *rvv_inst, uint32_t vstart);
     void evaluate() override;
+    // Don't use `Parent.any` to resolve parent CPU for which causes
+    // circular dependency when creating CCObject.
+    void setCPU(MinorCPU *_cpu) { cpu = _cpu; }
+    void startup() override;
 
   protected:
     // interface to RTL model

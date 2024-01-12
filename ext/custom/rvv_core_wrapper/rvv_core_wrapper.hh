@@ -2,13 +2,6 @@
 #define __RVV_CORE_WRAPPER_HH__
 
 #include <cstdint>
-#ifdef VM_TRACE_FST
-class VerilatedFstC;
-#define VM_TRACE_CLASS_NAME VerilatedFstC
-#else
-class VerilatedVcdC;
-#define VM_TRACE_CLASS_NAME VerilatedVcdC
-#endif
 
 class Vrvv_core;
 
@@ -50,7 +43,7 @@ class RVVCoreWrapper {
 
   private:
     uint32_t rst_cycle;
-    VM_TRACE_CLASS_NAME *tracer;
+    void *tracer;
     Vrvv_core *rvv_core;
 };
 

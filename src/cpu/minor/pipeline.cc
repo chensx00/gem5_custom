@@ -257,5 +257,10 @@ Pipeline::isDrained()
     return ret;
 }
 
+void Pipeline::RVVInstDone(const minor::InstId &inst_id, bool is_illegal,
+                           uint64_t result) {
+    execute.RVVInstDone(inst_id, is_illegal, result);
+}
+
 } // namespace minor
 } // namespace gem5

@@ -58,6 +58,7 @@
 
 namespace gem5
 {
+class RVVCoreRTLObject;
 
 namespace minor
 {
@@ -76,6 +77,7 @@ class Execute : public Named
 
     /** Pointer back to the containing CPU */
     MinorCPU &cpu;
+    RVVCoreRTLObject* rvvcore;
 
     /** Number of instructions that can be issued per cycle */
     unsigned int issueLimit;
@@ -356,6 +358,9 @@ class Execute : public Named
     /** Like the drain interface on SimObject */
     unsigned int drain();
     void drainResume();
+
+    void RVVInstDone(const minor::InstId &inst_id, bool is_illegal,
+                     uint64_t result);
 };
 
 } // namespace minor

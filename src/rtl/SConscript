@@ -5,4 +5,4 @@ SimObject('RVVCoreRTLObj.py', sim_objects=['RVVCoreRTLObject'])
 
 Source('rvvcore_rtlobj.cc')
 
-# DebugFlag('CustomObj', "Custom Inst")
+DebugFlag('RVVCore', "Print out RVVCore debug messages")

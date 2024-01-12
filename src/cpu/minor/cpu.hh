@@ -49,7 +49,6 @@
 #include "base/random.hh"
 #include "cpu/base.hh"
 #include "cpu/minor/activity.hh"
-#include "cpu/minor/dyn_inst.hh"
 #include "cpu/minor/stats.hh"
 #include "cpu/simple_thread.hh"
 #include "enums/ThreadPolicy.hh"
@@ -62,6 +61,7 @@ namespace minor {
 /** Forward declared to break the cyclic inclusion dependencies between
  *  pipeline and cpu */
 class Pipeline;
+class InstId;
 
 /** Minor will use the SimpleThread state for now */
 typedef SimpleThread MinorThread;
@@ -200,9 +200,8 @@ class MinorCPU : public BaseCPU
     void wakeupOnEvent(unsigned int stage_id);
     EventFunctionWrapper *fetchEventWrapper;
 
-    void RVVInstDone(minor::InstId inst_id, bool is_illegal, uint64_t result) {
-        panic("not implemented yet");
-    }
+    void RVVInstDone(const minor::InstId& inst_id, bool is_illegal,
+                     uint64_t result);
 };
 
 } // namespace gem5

@@ -6,8 +6,10 @@
 #include "base/trace.hh"
 #include "cpu/minor/cpu.hh"
 #include "cpu/minor/dyn_inst.hh"
+#include "debug/RVVCore.hh"
 #include "rvv_core_wrapper/rvv_core_wrapper.hh"
 #include "sim/cur_tick.hh"
+#include "sim/sim_exit.hh"
 #include "sim/ticked_object.hh"
 
 namespace gem5 {
@@ -15,12 +17,19 @@ namespace gem5 {
 // We set a higher priority for the RVVCoreRTLObject to make sure it will
 // be scheduled after the CPU tick event.
 RVVCoreRTLObject::RVVCoreRTLObject(const RVVCoreRTLObjectParams &params)
-    : TickedObject(params, Event::CPU_Tick_Pri + 1),
-      cpu(*dynamic_cast<MinorCPU *>(params.cpu)),
+    : TickedObject(params, Event::CPU_Tick_Pri + 1), cpu(nullptr),
       rvvCoreWrapper(new rvvcore::RVVCoreWrapper) {
     uint32_t id_width = rvvCoreWrapper->getInstIdWidth();
     instIds.resize(1 << id_width);
+    // It seems gem5 will not call destructor of SimObject. But calling
+    // destructor of rvvCoreWrapper to terminate RTL simulation explicitly
+    // is necessary. See
+    // https://www.mail-archive.com/gem5-users@gem5.org/msg20324.html
+    registerExitCallback([this]() { delete this->rvvCoreWrapper; });
 }
+
+// TODO: may we can delay starting tick until receving first rvv inst?
+void RVVCoreRTLObject::startup() { start(); }
 
 void RVVCoreRTLObject::evaluate() {
     rvvCoreWrapper->tick();
@@ -31,7 +40,7 @@ void RVVCoreRTLObject::evaluate() {
 
     rvvcore::RVVInstRecv recv;
     if (rvvCoreWrapper->getRVVInstRecv(recv)) {
-        cpu.RVVInstDone(instIds[recv.inst_id], recv.illegal, recv.result);
+        cpu->RVVInstDone(instIds[recv.inst_id], recv.illegal, recv.result);
         instIds[recv.inst_id] = minor::InstId();
     }
 }
@@ -54,12 +63,14 @@ bool RVVCoreRTLObject::sendNewRVVInst(minor::MinorDynInst *rvv_inst,
              "scheduled before rvv core.");
     panic_if(!rvv_inst->staticInst->isVector(),
              "call sendNewRVVInst with a non-vector inst");
+    DPRINTF(RVVCore, "Try to execute %s in rvvcore\n", *rvv_inst);
     uint32_t rvv_id;
     if (!rvvCoreWrapper->isReady()) {
-        // TODO: log this
+        DPRINTF(RVVCore, "rvvcore is not ready to execute %s\n", *rvv_inst);
         return false;
-    } else if (getNewInstId(rvv_id, rvv_inst->id)) {
-        // TODO: log this
+    } else if (!getNewInstId(rvv_id, rvv_inst->id)) {
+        DPRINTF(RVVCore, "rvvcore has no free inst id to execute %s\n",
+                *rvv_inst);
         return false;
     }
     RiscvISA::ExtMachInst inst =

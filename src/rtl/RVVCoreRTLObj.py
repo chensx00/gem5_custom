@@ -7,5 +7,3 @@ class RVVCoreRTLObject(TickedObject):
     type = "RVVCoreRTLObject"
     cxx_header = "rtl/rvvcore_rtlobj.hh"
     cxx_class = "gem5::RVVCoreRTLObject"
-
-    cpu = Param.BaseCPU(Parent.any, "CPU this object belongs to")

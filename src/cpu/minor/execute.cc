@@ -39,6 +39,7 @@
 
 #include <functional>
 
+#include "arch/riscv/insts/standard.hh"
 #include "cpu/minor/cpu.hh"
 #include "cpu/minor/exec_context.hh"
 #include "cpu/minor/fetch1.hh"
@@ -53,6 +54,8 @@
 #include "debug/MinorMem.hh"
 #include "debug/MinorTrace.hh"
 #include "debug/PCEvent.hh"
+#include "debug/RVVCore.hh"
+#include "rtl/rvvcore_rtlobj.hh"
 
 namespace gem5
 {
@@ -69,6 +72,7 @@ Execute::Execute(const std::string &name_,
     inp(inp_),
     out(out_),
     cpu(cpu_),
+    rvvcore(params.rvvcore),
     issueLimit(params.executeIssueLimit),
     memoryIssueLimit(params.executeMemoryIssueLimit),
     commitLimit(params.executeCommitLimit),
@@ -191,6 +195,9 @@ Execute::Execute(const std::string &name_,
         executeInfo[tid].inFUMemInsts = new Queue<QueuedInst,
             ReportTraitsAdaptor<QueuedInst> >(
             name_ + ".inFUMemInsts" + tid_str, "insts", total_slots);
+    }
+    if (rvvcore) {
+        rvvcore->setCPU(&cpu);
     }
 }
 
@@ -963,6 +970,18 @@ Execute::commitInst(MinorDynInstPtr inst, bool early_memory_issue,
         /* This instruction can suspend, need to be able to communicate
          * backwards, so no other branches may evaluate this cycle*/
         completed_inst = false;
+    } else if (inst->staticInst->isVector() && rvvcore &&
+               inst->staticInst->opClass() != VectorConfigOp){
+        panic_if(inst->staticInst->isMemRef(),
+            "memory inst has not been implemented yet");
+        uint32_t vstart =
+            cpu.threads[thread_id]->readMiscReg(RiscvISA::MISCREG_VSTART);
+        // TODO: Read scalar register if needed
+        completed_inst = rvvcore->sendNewRVVInst(inst.get(), vstart);
+        committed = completed_inst;
+        if (completed_inst) {
+            doInstCommitAccounting(inst);
+        }
     } else {
         ExecContext context(cpu, *cpu.threads[thread_id], *this, inst);
 
@@ -1892,5 +1911,13 @@ Execute::getDcachePort()
     return lsq.getDcachePort();
 }
 
+void Execute::RVVInstDone(const minor::InstId &inst_id, bool is_illegal,
+                          uint64_t result) {
+    // scoreboard[inst_id.threadId].clearInstDests();
+    // panic("not implemented yet");
+    // TODO: log this
+    panic_if(is_illegal,
+             "illegal instruction should has been captured by decoder?");
+}
 } // namespace minor
 } // namespace gem5
