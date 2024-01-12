@@ -42,3 +42,6 @@ ext/custom/wrapper_counter.hh
 *.o
 *.d
 .cache
+rvv_core.fst
+rvv_core.vcd
+compile_commands.json
