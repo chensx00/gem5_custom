@@ -1916,8 +1916,11 @@ void Execute::RVVInstDone(const minor::InstId &inst_id, bool is_illegal,
     // scoreboard[inst_id.threadId].clearInstDests();
     // panic("not implemented yet");
     // TODO: log this
-    panic_if(is_illegal,
-             "illegal instruction should has been captured by decoder?");
+    if (is_illegal) {
+        rvvcore->endRTLModel();
+        panic("illegal instruction should has been captured by decoder?");
+    }
+
 }
 } // namespace minor
 } // namespace gem5

@@ -25,7 +25,10 @@ RVVCoreRTLObject::RVVCoreRTLObject(const RVVCoreRTLObjectParams &params)
     // destructor of rvvCoreWrapper to terminate RTL simulation explicitly
     // is necessary. See
     // https://www.mail-archive.com/gem5-users@gem5.org/msg20324.html
-    registerExitCallback([this]() { delete this->rvvCoreWrapper; });
+    registerExitCallback([this]() {
+        delete this->rvvCoreWrapper;
+        this->rvvCoreWrapper = nullptr;
+    });
 }
 
 // TODO: may we can delay starting tick until receving first rvv inst?

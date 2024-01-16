@@ -21,7 +21,7 @@ class RVVCoreRTLObject : public TickedObject
   private:
     uint64_t last_tick = 0;
     MinorCPU *cpu;
-    rvvcore::RVVCoreWrapper* rvvCoreWrapper;
+    rvvcore::RVVCoreWrapper *rvvCoreWrapper;
     std::vector<minor::InstId> instIds;
 
     bool getNewInstId(uint32_t &id, minor::InstId &instId);
@@ -34,6 +34,11 @@ class RVVCoreRTLObject : public TickedObject
     // circular dependency when creating CCObject.
     void setCPU(MinorCPU *_cpu) { cpu = _cpu; }
     void startup() override;
+    void endRTLModel() {
+        delete rvvCoreWrapper;
+        // Deleting nullptr in exiting callback should be safe
+        rvvCoreWrapper = nullptr;
+    }
 
   protected:
     // interface to RTL model
