@@ -45,3 +45,7 @@ ext/custom/wrapper_counter.hh
 rvv_core.fst
 rvv_core.vcd
 compile_commands.json
+
+ext/custom/librvvcore.so
+ext/custom/rvv_core_wrapper.hh
+custom_test/vector
